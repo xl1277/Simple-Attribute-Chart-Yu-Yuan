@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>扩列卡 · 制作器</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+
+:root{
+  --pink:#FFB3D1;
+  --lav:#C9B6FF;
+  --sky:#A8DEFF;
+  --ink:#221F2E;
+  --ink2:#6E6A80;
+  --line:#F2EFF8;
+  --card:#FFFFFF;
+  --ico:#B9A9EC;
+  --text:#221F2E;
+}
+
+body{
+  min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 640px at 12% -8%, #FFEAF3 0%, transparent 60%),
+    radial-gradient(820px 620px at 96% 4%, #EFE8FF 0%, transparent 58%),
+    radial-gradient(900px 700px at 50% 106%, #E8F6FF 0%, transparent 62%),
+    #FBF9FD;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:48px 16px 140px;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ================= 卡片 ================= */
+.card{
+  position:relative;
+  width:min(400px,100%);
+  padding:1.5px;
+  border-radius:32px;
+  background:linear-gradient(150deg,#FFD4E4 0%, #E4DBFF 46%, #CFEBFF 100%);
+  box-shadow:0 26px 64px -32px rgba(140,110,190,.55), 0 6px 20px -10px rgba(140,110,190,.28);
+}
+.card-inner{
+  position:relative;
+  background:var(--card);
+  border-radius:30.5px;
+  padding:32px 26px 22px;
+  overflow:hidden;
+}
+
+/* 背景层 */
+.card-bg{
+  position:absolute;inset:0;z-index:0;overflow:hidden;
+  border-radius:30.5px;pointer-events:none;
+}
+.bg-image{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  opacity:0;transition:opacity .35s;
+}
+.bg-image.has{opacity:1}
+.bg-pattern{position:absolute;inset:0;transition:opacity .3s}
+.bg-overlay{position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .3s}
+
+.card-inner::before{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(420px 220px at 100% 0%, rgba(201,182,255,.13), transparent 72%),
+    radial-gradient(420px 260px at 0% 100%, rgba(168,222,255,.12), transparent 72%);
+  pointer-events:none;
+}
+.deco-star{position:absolute;top:20px;right:20px;transform:rotate(-14deg);opacity:.85;pointer-events:none;z-index:2}
+.deco-arc{position:absolute;left:-38px;bottom:-38px;opacity:.9;pointer-events:none;z-index:2}
+
+/* ================= 头部 ================= */
+.head{position:relative;z-index:3;text-align:center}
+.avatar{
+  position:relative;width:88px;height:88px;margin:0 auto 16px;
+  border-radius:50%;border:1px dashed rgba(180,160,220,.45);padding:6px;cursor:pointer;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.3);
+}
+.avatar:hover{transform:scale(1.035)}
+.avatar-inner{
+  width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(145deg,#FFF0F7,#F0EBFF 55%,#E8F5FF);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:700;color:#C9AEE8;letter-spacing:1px;user-select:none;
+}
+.avatar-inner img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar .cam{
+  position:absolute;right:0;bottom:0;width:24px;height:24px;border-radius:50%;
+  background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px -4px rgba(140,110,190,.6);
+  display:none;align-items:center;justify-content:center;font-size:13px;color:var(--lav);font-weight:600;line-height:1;
+}
+body.editing .avatar .cam{display:flex}
+
+/* ============ 核心：CN 使用 --text ============ */
+.cn{
+  font-size:24px;font-weight:800;letter-spacing:1.5px;line-height:1.3;
+  color:var(--text);
+  outline:none;word-break:break-word;padding:2px 8px;border-radius:8px;
+}
+
+.meta{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.6px;
+  padding:5px 12px;border-radius:999px;
+  background:rgba(251,249,254,.85);border:1px solid var(--line);
+  color:var(--text);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  transition:background .3s, border-color .3s;
+}
+.pill b{font-size:8.5px;font-weight:800;letter-spacing:1.6px;color:var(--ico);}
+.pill .ed{outline:none;font-weight:700;min-width:14px;padding:0 2px;border-radius:4px;color:var(--text);}
+.pill.tint{
+  background:linear-gradient(120deg, rgba(255,179,209,.2), rgba(201,182,255,.2));
+  border-color:rgba(201,182,255,.32);
+  font-weight:700;letter-spacing:1.4px;
+}
+.pill.tint{color:var(--text);}
+
+.hr{
+  height:1px;margin:24px 0 0;
+  background:linear-gradient(90deg,transparent,#F1EEF8 16%,#F1EEF8 84%,transparent);
+  position:relative;z-index:3;
+  transition:background .3s;
+}
+
+/* ================= 栏目 ================= */
+.fields{position:relative;z-index:3;padding-top:20px}
+.sec{margin-bottom:20px}
+.sec:last-child{margin-bottom:4px}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.sec-ico{flex:none;display:flex;align-items:center;justify-content:center;width:14px;height:14px;cursor:pointer;transition:transform .25s}
+.sec-ico:hover{transform:rotate(20deg) scale(1.15)}
+.sec-ttl{
+  font-size:11.5px;font-weight:700;letter-spacing:2.2px;
+  color:var(--text);opacity:.68;
+  outline:none;padding:1px 4px;border-radius:5px;white-space:nowrap;
+}
+.sec-line{
+  flex:1;height:1px;min-width:6px;
+  background:linear-gradient(90deg,#F0EDF7,transparent);
+  transition:background .3s;
+}
+.sec-del{
+  display:none;flex:none;width:19px;height:19px;border-radius:50%;
+  border:1px solid rgba(255,179,209,.5);background:rgba(255,179,209,.12);color:#FF8AB8;font-size:12px;
+  cursor:pointer;padding:0;align-items:center;justify-content:center;transition:.2s;font-family:inherit;
+}
+.sec-del:hover{background:rgba(255,179,209,.3);transform:scale(1.12)}
+body.editing .sec-del{display:flex}
+
+/* ============ 核心：标签文字使用 --text ============ */
+.tags{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.tag{
+  display:inline-flex;align-items:center;font-size:12px;line-height:1;letter-spacing:.3px;
+  padding:7.5px 12px;border-radius:11px;
+  background:rgba(251,249,254,.82);border:1px solid #F2EFF8;
+  color:var(--text);
+  transition:background .3s,border-color .3s,box-shadow .22s,transform .22s;
+  max-width:100%;word-break:break-word;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.tag .txt{outline:none;padding:1px 2px;border-radius:4px}
+.tag:hover{background:rgba(255,255,255,.96);border-color:rgba(201,182,255,.55);box-shadow:0 4px 12px -6px rgba(150,120,190,.5);transform:translateY(-1px)}
+.tag .x{display:none;margin-left:7px;color:#FF8AB8;font-size:12px;cursor:pointer;opacity:.7;user-select:none;line-height:1}
+.tag .x:hover{opacity:1}
+body.editing .tag .x{display:inline}
+
+.tag-input{
+  display:none;width:78px;padding:7.5px 12px;border-radius:11px;
+  background:rgba(255,255,255,.95);
+  border:1px dashed rgba(201,182,255,.6);
+  color:var(--ink);font-size:12px;font-family:inherit;
+  outline:none;transition:width .28s ease,border-color .25s,box-shadow .25s;
+}
+.tag-input::placeholder{color:#C9C5D6;letter-spacing:.5px}
+.tag-input:focus{width:134px;border-style:solid;border-color:var(--lav);box-shadow:0 0 0 3px rgba(201,182,255,.16)}
+body.editing .tag-input{display:inline-block}
+
+.add-sec{
+  display:none;width:100%;margin-top:2px;padding:11px;border-radius:14px;
+  border:1px dashed rgba(201,182,255,.5);background:rgba(201,182,255,.06);color:#A79DCB;
+  font-size:11.5px;letter-spacing:2px;text-align:center;cursor:pointer;transition:.24s;font-family:inherit;
+}
+body.editing .add-sec{display:block}
+.add-sec:hover{border-color:var(--pink);color:#E47AA8;background:rgba(255,179,209,.1);transform:translateY(-1px)}
+
+.foot{
+  position:relative;z-index:3;margin-top:26px;padding-top:15px;
+  border-top:1px solid #F4F1F9;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:9px;letter-spacing:3px;
+  color:var(--text);opacity:.42;
+  font-weight:600;
+  transition:border-color .3s;
+}
+
+body.editing [data-edit]:focus{
+  background:rgba(201,182,255,.1);
+  box-shadow:0 0 0 3px rgba(201,182,255,.16);
+  border-radius:6px;
+}
+
+/* ================= 浅色文字模式（自动适配深色背景） ================= */
+body.light-text .tag{
+  background:rgba(22,17,36,.42);
+  border-color:rgba(255,255,255,.16);
+}
+body.light-text .tag:hover{
+  background:rgba(22,17,36,.6);
+  border-color:rgba(255,255,255,.32);
+}
+body.light-text .pill{
+  background:rgba(22,17,36,.42);
+  border-color:rgba(255,255,255,.16);
+}
+body.light-text .pill.tint{
+  background:linear-gradient(120deg,rgba(255,179,209,.24),rgba(201,182,255,.24));
+  border-color:rgba(255,255,255,.22);
+}
+body.light-text .sec-line{
+  background:linear-gradient(90deg,rgba(255,255,255,.16),transparent);
+}
+body.light-text .hr{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14) 16%,rgba(255,255,255,.14) 84%,transparent);
+}
+body.light-text .foot{border-top-color:rgba(255,255,255,.14)}
+body.light-text .tag-input{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.24);
+  color:#fff;
+}
+body.light-text .tag-input::placeholder{color:rgba(255,255,255,.42)}
+body.light-text .add-sec{
+  border-color:rgba(255,255,255,.24);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.6);
+}
+body.light-text .add-sec:hover{
+  border-color:var(--pink);
+  color:#fff;
+  background:rgba(255,179,209,.14);
+}
+body.light-text .avatar{border-color:rgba(255,255,255,.32)}
+
+/* ================= 工具栏 ================= */
+.toolbar{
+  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;
+  background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 20px 46px -18px rgba(150,120,190,.55),0 0 0 1px rgba(235,230,245,.9);
+  backdrop-filter:blur(22px) saturate(1.8);-webkit-backdrop-filter:blur(22px) saturate(1.8);
+  max-width:calc(100vw - 20px);flex-wrap:wrap;justify-content:center;
+}
+.tb{
+  appearance:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;letter-spacing:.5px;
+  color:#5C5A68;padding:9px 15px;border-radius:999px;background:#F8F6FC;border:1px solid #F0EDF7;transition:.22s;white-space:nowrap;
+}
+.tb:hover{background:#fff;transform:translateY(-1px);box-shadow:0 7px 18px -10px rgba(150,120,190,.7)}
+.tb:disabled{opacity:.6;cursor:wait;transform:none}
+.tb.primary{background:linear-gradient(118deg,#FFB3D1,#C9B6FF 55%,#A8DEFF);color:#fff;font-weight:700;border:0;box-shadow:0 10px 24px -12px rgba(180,150,255,.95)}
+.tb.primary:hover{filter:brightness(1.05)}
+
+.dots{display:flex;gap:7px;padding:0 3px}
+.dot{width:19px;height:19px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.22s}
+.dot:hover{transform:scale(1.15)}
+.dot.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 0 1.5px rgba(160,130,200,.4), 0 4px 10px -4px rgba(160,130,200,.8)}
+
+.toast{
+  position:fixed;left:50%;bottom:100px;transform:translate(-50%,14px);background:rgba(34,31,46,.95);color:#fff;
+  font-size:12.5px;letter-spacing:.5px;padding:11px 22px;border-radius:999px;opacity:0;pointer-events:none;
+  transition:.32s ease;z-index:400;max-width:calc(100vw - 40px);text-align:center;box-shadow:0 16px 36px -14px rgba(0,0,0,.6);
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.card.exporting{box-shadow:none !important}
+
+/* ================= 通用面板（背景 / 字体颜色共用） ================= */
+.panel-mask{
+  position:fixed;inset:0;z-index:79;
+  background:rgba(30,25,45,.42);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:.32s;
+}
+.panel-mask.show{opacity:1;pointer-events:auto}
+
+.panel{
+  position:fixed;left:50%;bottom:0;
+  transform:translate(-50%,100%);
+  width:min(440px,100%);
+  z-index:80;
+  background:#fff;
+  border-radius:26px 26px 0 0;
+  padding:20px 20px 108px;
+  max-height:82vh;overflow-y:auto;
+  box-shadow:0 -22px 60px -22px rgba(140,110,190,.55);
+  transition:transform .4s cubic-bezier(.2,.9,.3,1);
+  -webkit-overflow-scrolling:touch;
+}
+.panel.show{transform:translate(-50%,0)}
+
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #F3F0F9;
+}
+.panel-title{font-size:14px;font-weight:800;letter-spacing:2px;color:var(--ink)}
+.panel-close{
+  width:30px;height:30px;border-radius:50%;border:none;background:#F5F3FA;
+  color:#8D87A6;font-size:15px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.panel-close:hover{background:#EDE9F7;color:var(--ink)}
+
+.panel-group{margin-bottom:20px}
+.panel-group:last-child{margin-bottom:0}
+.panel-label{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:700;letter-spacing:1.8px;color:#A79DCB;
+  margin-bottom:12px;
+}
+.panel-label .val{color:var(--ico);letter-spacing:.6px;font-weight:800}
+
+/* ================= 花纹选择 ================= */
+.pattern-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.pattern-item{
+  position:relative;aspect-ratio:1;border-radius:12px;background-color:#fff;
+  border:1.5px solid #F0EDF7;cursor:pointer;overflow:hidden;transition:.22s;
+}
+.pattern-item:hover{transform:translateY(-2px);box-shadow:0 8px 18px -10px rgba(150,120,190,.8)}
+.pattern-item.active{border-color:var(--lav);box-shadow:0 0 0 3px rgba(201,182,255,.22)}
+.pattern-item.active::after{content:'✓';position:absolute;right:3px;bottom:2px;font-size:9px;font-weight:800;color:var(--ico)}
+.pattern-name{
+  position:absolute;left:0;right:0;bottom:0;font-size:8px;text-align:center;padding:2px 0;
+  background:rgba(255,255,255,.82);color:#8D87A6;letter-spacing:.4px;font-weight:600;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+
+/* ================= 上传行 ================= */
+.upload-row{display:flex;gap:8px;margin-bottom:14px}
+.up-btn{
+  flex:1;appearance:none;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:700;letter-spacing:1px;
+  padding:11px;border-radius:13px;border:1px solid #F0EDF7;
+  background:#FBF9FE;color:#6E6A80;transition:.22s;
+}
+.up-btn:hover{background:#fff;box-shadow:0 8px 20px -12px rgba(150,120,190,.9);transform:translateY(-1px)}
+.up-btn.accent{
+  background:linear-gradient(118deg,#FFB3D1,#C9B6FF 60%,#A8DEFF);
+  color:#fff;border:0;box-shadow:0 10px 22px -12px rgba(180,150,255,.95);
+}
+.up-btn.accent:hover{filter:brightness(1.05)}
+
+/* ================= 滑条 ================= */
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.slider-row:last-child{margin-bottom:0}
+.slider-row .name{font-size:11px;color:#8D87A6;letter-spacing:1px;font-weight:600;width:64px;flex:none}
+.slider-row input[type=range]{
+  flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
+  background:linear-gradient(90deg,var(--lav),var(--sky));outline:none;
+}
+.slider-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;
+  background:#fff;border:2px solid var(--lav);box-shadow:0 3px 9px -3px rgba(140,110,190,.9);cursor:pointer;
+}
+.slider-row input[type=range]::-moz-range-thumb{
+  width:17px;height:17px;border-radius:50%;background:#fff;border:2px solid var(--lav);cursor:pointer;
+}
+
+/* ================= 颜色选择 ================= */
+.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.color-item{
+  position:relative;aspect-ratio:1;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06), 0 4px 10px -4px rgba(140,110,190,.45);
+  transition:.22s;
+}
+.color-item:hover{transform:scale(1.13)}
+.color-item.active{
+  border-color:#fff;
+  box-shadow:0 0 0 2px var(--lav), 0 6px 16px -6px rgba(160,130,200,.95);
+  transform:scale(1.13);
+}
+.color-item.active::after{
+  content:'✓';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;
+  color:#fff;
+  text-shadow:0 0 3px rgba(0,0,0,.6), 0 1px 2px rgba(0,0,0,.7);
+}
+
+.color-custom{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:14px;
+  background:#FBF9FE;border:1px solid #F0EDF7;
+}
+.color-custom input[type=color]{
+  width:44px;height:44px;border:none;border-radius:50%;
+  background:none;cursor:pointer;padding:0;
+  -webkit-appearance:none;appearance:none;
+}
+.color-custom input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.color-custom input[type=color]::-webkit-color-swatch{
+  border:2px solid #fff;border-radius:50%;
+  box-shadow:0 0 0 1.5px var(--lav), 0 4px 10px -4px rgba(140,110,190,.6);
+}
+.color-custom input[type=color]::-moz-color-swatch{
+  border:2px solid #fff;border-radius:50%;
+  box-shadow:0 0 0 1.5px var(--lav);
+}
+.color-hex{
+  font-size:13px;font-weight:700;letter-spacing:1.4px;
+  color:#6E6A80;font-variant-numeric:tabular-nums;
+  text-transform:uppercase;
+  flex:1;
+}
+.color-presets-note{
+  font-size:10.5px;color:#A79DCB;letter-spacing:.6px;
+  margin-top:10px;line-height:1.6;
+}
+
+/* ================= 保存弹窗 ================= */
+.modal{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,.88);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:22px;opacity:0;transition:opacity .3s;
+}
+.modal.show{display:flex;opacity:1}
+.modal img{max-width:100%;max-height:76vh;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.modal-tip{
+  color:#fff;font-size:13.5px;letter-spacing:1.5px;margin-top:22px;
+  background:rgba(255,255,255,.16);padding:11px 24px;border-radius:99px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-weight:600;
+}
+.modal-close{
+  position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.2);color:#fff;border:none;font-size:17px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ================= 响应式 ================= */
+@media (max-width:480px){
+  body{padding:26px 12px 136px}
+  .card{border-radius:28px}
+  .card-inner{padding:26px 20px 18px;border-radius:26.5px}
+  .card-bg{border-radius:26.5px}
+  .avatar{width:78px;height:78px;padding:5px}
+  .avatar-inner{font-size:26px}
+  .cn{font-size:22px}
+  .tb{padding:8px 12px;font-size:12px}
+  .toolbar{gap:6px;padding:7px 9px}
+  .pattern-grid{grid-template-columns:repeat(5,1fr)}
+  .color-grid{grid-template-columns:repeat(5,1fr)}
+  .panel{padding:18px 16px 108px}
+}
+@media (max-width:360px){
+  .pattern-grid{grid-template-columns:repeat(4,1fr)}
+  .color-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body class="editing">
+
+<div class="card" id="card">
+  <div class="card-inner">
+
+    <!-- 背景层 -->
+    <div class="card-bg">
+      <div class="bg-image" id="bgImage"></div>
+      <div class="bg-pattern" id="bgPattern"></div>
+      <div class="bg-overlay" id="bgOverlay"></div>
+    </div>
+
+    <svg class="deco-star" width="38" height="38" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 3 L22.6 17.4 L37 20 L22.6 22.6 L20 37 L17.4 22.6 L3 20 L17.4 17.4 Z" fill="#F4EFFF"/></svg>
+    <svg class="deco-arc" width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg"><path d="M4 126 A122 122 0 0 1 126 4" fill="none" stroke="#F4F0FF" stroke-width="1.2"/><path d="M20 126 A106 106 0 0 1 126 20" fill="none" stroke="#F7F4FF" stroke-width="1.2"/></svg>
+
+    <header class="head">
+      <div class="avatar" id="avatar" title="点击上传头像">
+        <div class="avatar-inner" id="avatarBox">樱</div>
+        <span class="cam">+</span>
+      </div>
+      <div class="cn" id="cn" data-edit contenteditable="true" spellcheck="false">星野</div>
+      <div class="meta">
+        <span class="pill"><b>AGE</b><span class="ed" id="age" data-edit contenteditable="true" spellcheck="false">17</span></span>
+        <span class="pill tint">扩列中</span>
+      </div>
+    </header>
+
+    <div class="hr"></div>
+    <div class="fields" id="fields"></div>
+    <button class="add-sec" id="addSec" type="button">＋ 添加新栏目</button>
+    <div class="foot"><span>EXTEND · 扩列卡</span><span id="yearText"></span></div>
+  </div>
+</div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+  <button class="tb" id="toggleEdit" type="button">✎ 编辑中</button>
+  <button class="tb" id="openBg" type="button">❖ 背景</button>
+  <button class="tb" id="openColor" type="button">◐ 字色</button>
+  <div class="dots" id="dots"></div>
+  <button class="tb primary" id="exportBtn" type="button">生成图片</button>
+</div>
+
+<!-- ========== 背景面板 ========== -->
+<div class="panel-mask" id="bgMask"></div>
+<div class="panel" id="bgPanel">
+  <div class="panel-head">
+    <span class="panel-title">背景设置</span>
+    <button class="panel-close" id="bgClose" type="button">✕</button>
+  </div>
+
+  <div class="panel-group">
+    <div class="panel-label"><span>图案花纹</span><span class="val" id="patternVal">无</span></div>
+    <div class="pattern-grid" id="patternGrid"></div>
+  </div>
+
+  <div class="panel-group">
+    <div class="panel-label"><span>自定义背景图</span></div>
+    <div class="upload-row">
+      <button class="up-btn accent" id="uploadBg" type="button">上传图片</button>
+      <button class="up-btn" id="clearBg" type="button">清除图片</button>
+    </div>
+    <div class="slider-row">
+      <span class="name">图片透明</span>
+      <input type="range" id="imgOpacity" min="10" max="100" value="100">
+    </div>
+    <div class="slider-row">
+      <span class="name">白色遮罩</span>
+      <input type="range" id="overlayOpacity" min="0" max="88" value="30">
+    </div>
+  </div>
+</div>
+
+<!-- ========== 字体颜色面板 ========== -->
+<div class="panel-mask" id="colorMask"></div>
+<div class="panel" id="colorPanel">
+  <div class="panel-head">
+    <span class="panel-title">字体颜色</span>
+    <button class="panel-close" id="colorClose" type="button">✕</button>
+  </div>
+
+  <div class="panel-group">
+    <div class="panel-label"><span>预设色板</span><span class="val" id="colorVal">墨黑</span></div>
+    <div class="color-grid" id="colorGrid"></div>
+  </div>
+
+  <div class="panel-group">
+    <div class="panel-label"><span>自定义取色</span></div>
+    <div class="color-custom">
+      <input type="color" id="colorPicker" value="#221F2E">
+      <span class="color-hex" id="colorHex">#221F2E</span>
+    </div>
+    <div class="color-presets-note">
+      提示：选择浅色文字时会自动切换为深色标签底，保证在深色背景图上依然清晰。
+    </div>
+  </div>
+</div>
+
+<!-- 保存弹窗 -->
+<div class="modal" id="saveModal">
+  <button class="modal-close" id="modalClose" type="button">✕</button>
+  <img id="resultImg" src="" alt="扩列卡">
+  <div class="modal-tip">长按图片 → 保存到相册</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept="image/*" hidden>
+<input type="file" id="bgFileInput" accept="image/*" hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+if(!window.html2canvas){document.write('<scr'+'ipt src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"><\/scr'+'ipt>');}
+</script>
+<script>
+if(!window.html2canvas){document.write('<scr'+'ipt src="https://cdn.staticfile.org/html2canvas/1.4.1/html2canvas.min.js"><\/scr'+'ipt>');}
+</script>
+
+<script>
+/* ================= 工具 ================= */
+function rgba(hex, a){
+  const h = hex.replace('#','');
+  const full = h.length === 3 ? h.split('').map(x=>x+x).join('') : h;
+  const n = parseInt(full, 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+function svgBg(svg){
+  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+/* 亮度判断：是否浅色 */
+function isLight(hex){
+  const h = hex.replace('#','');
+  const full = h.length === 3 ? h.split('').map(x=>x+x).join('') : h;
+  const n = parseInt(full, 16);
+  const r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  return (r*0.299 + g*0.587 + b*0.114) > 152;
+}
+function normalizeHex(v){
+  let h = (v||'').trim();
+  if(!h) return '#221F2E';
+  if(h[0] !== '#') h = '#' + h;
+  if(h.length === 4){
+    h = '#' + h[1]+h[1]+h[2]+h[2]+h[3]+h[3];
+  }
+  if(!/^#[0-9a-fA-F]{6}$/.test(h)) return '#221F2E';
+  return h.toUpperCase();
+}
+
+/* ================= 主题配色 ================= */
+const THEMES = [
+  {pink:'#FFB3D1', lav:'#C9B6FF', sky:'#A8DEFF', ico:'#B9A9EC'},
+  {pink:'#9EE7D8', lav:'#A8DEFF', sky:'#C9B6FF', ico:'#7FC9C0'},
+  {pink:'#FFC59E', lav:'#FFA8B8', sky:'#FFD4E0', ico:'#E89A80'},
+  {pink:'#D3BFFF', lav:'#A9C0FF', sky:'#FFB8E0', ico:'#A08FE0'},
+  {pink:'#C3E6B8', lav:'#F0DC9E', sky:'#B0DFE8', ico:'#9CC48F'},
+];
+
+/* ================= 花纹库 ================= */
+const PATTERNS = [
+  {id:'none', name:'无', size:'auto', make:()=>'none'},
+  {id:'dot', name:'圆点', size:'16px 16px',
+    make:c=>`radial-gradient(circle, ${rgba(c,.24)} 1.1px, transparent 1.2px)`},
+  {id:'grid', name:'网格', size:'22px 22px',
+    make:c=>`linear-gradient(${rgba(c,.15)} 1px, transparent 1px), linear-gradient(90deg, ${rgba(c,.15)} 1px, transparent 1px)`},
+  {id:'stripe', name:'斜纹', size:'10px 10px',
+    make:c=>`repeating-linear-gradient(45deg, ${rgba(c,.16)} 0 1px, transparent 1px 9px)`},
+  {id:'plus', name:'加号', size:'26px 26px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><path d="M13 8 v10 M8 13 h10" stroke="${rgba(c,.32)}" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>`)},
+  {id:'sakura', name:'樱花', size:'44px 44px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44"><g fill="${rgba(c,.3)}" transform="translate(22 22)"><ellipse cx="0" cy="-6" rx="3.3" ry="5.8"/><ellipse cx="0" cy="-6" rx="3.3" ry="5.8" transform="rotate(90)"/><ellipse cx="0" cy="-6" rx="3.3" ry="5.8" transform="rotate(180)"/><ellipse cx="0" cy="-6" rx="3.3" ry="5.8" transform="rotate(270)"/></g></svg>`)},
+  {id:'star', name:'星芒', size:'40px 40px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><path d="M20 5 C21.2 14.5 25.5 18.8 35 20 C25.5 21.2 21.2 25.5 20 35 C18.8 25.5 14.5 21.2 5 20 C14.5 18.8 18.8 14.5 20 5 Z" fill="${rgba(c,.3)}"/></svg>`)},
+  {id:'heart', name:'爱心', size:'34px 34px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34"><path d="M17 27 C15 25.5 6 19.5 6 13 C6 9.4 8.8 7 12 7 C14 7 16 8 17 10 C18 8 20 7 22 7 C25.2 7 28 9.4 28 13 C28 19.5 19 25.5 17 27 Z" fill="${rgba(c,.28)}"/></svg>`)},
+  {id:'wave', name:'波浪', size:'56px 24px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="56" height="24" viewBox="0 0 56 24"><path d="M0 12 Q14 0 28 12 T56 12" fill="none" stroke="${rgba(c,.32)}" stroke-width="1.2" stroke-linecap="round"/></svg>`)},
+  {id:'bubble', name:'泡泡', size:'76px 76px',
+    make:c=>`radial-gradient(circle at 28% 30%, ${rgba(c,.2)} 0 5px, transparent 5.6px), radial-gradient(circle at 72% 68%, ${rgba(c,.14)} 0 3.4px, transparent 4px)`},
+  {id:'diag', name:'斜格', size:'26px 26px',
+    make:c=>`repeating-linear-gradient(45deg, ${rgba(c,.13)} 0 1.2px, transparent 1.2px 24px), repeating-linear-gradient(-45deg, ${rgba(c,.13)} 0 1.2px, transparent 1.2px 24px)`},
+  {id:'cross', name:'十字', size:'30px 30px',
+    make:c=>svgBg(`<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><path d="M15 11.5 v7 M11.5 15 h7" stroke="${rgba(c,.34)}" stroke-width="1" stroke-linecap="round" fill="none"/><circle cx="15" cy="15" r="0.9" fill="${rgba(c,.4)}"/></svg>`)},
+];
+
+/* ================= 图标库 ================= */
+const ICON_PATHS = {
+  bolt:'<path d="M13.2 2.5 4.6 13.6h6.2L9.6 21.5l8.8-11.4h-6.3l1.1-7.6z"/>',
+  book:'<path d="M4.2 19.2a2.8 2.8 0 0 1 2.8-2.8h13"/><path d="M7 2.6h13v18.8H7a2.8 2.8 0 0 1-2.8-2.8V5.4A2.8 2.8 0 0 1 7 2.6z"/>',
+  film:'<rect x="2.6" y="3.6" width="18.8" height="16.8" rx="2.6"/><path d="M7.4 3.6v16.8M16.6 3.6v16.8M2.6 9.4h18.8M2.6 14.6h18.8"/>',
+  game:'<rect x="2.2" y="6.6" width="19.6" height="10.8" rx="4.6"/><path d="M7.2 12h2.6M8.5 10.7v2.6"/><circle cx="15.9" cy="11" r=".85"/><circle cx="18.1" cy="13.2" r=".85"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.7 2.6 4.1 5.7 4.1 9s-1.4 6.4-4.1 9c-2.7-2.6-4.1-5.7-4.1-9S9.3 5.6 12 3z"/>',
+  star:'<path d="M12 2.6v18.8M2.6 12h18.8M5.9 5.9l12.2 12.2M18.1 5.9 5.9 18.1"/>',
+  heart:'<path d="M12 20.4C10.9 19.5 4 14.8 4 9.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8 3.5c0 5.1-6.9 9.8-8 10.7z"/>',
+  spark:'<path d="M12 2.6 14.1 9 20.5 11.1 14.1 13.2 12 19.6 9.9 13.2 3.5 11.1 9.9 9z"/>',
+  ring:'<circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="12" r="3.2"/>',
+  note:'<path d="M9.2 17.8V5.2l9.6-1.9v12.6"/><circle cx="6.6" cy="18" r="2.6"/><circle cx="16.2" cy="16" r="2.6"/>',
+  cube:'<path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/>',
+};
+const ICON_KEYS = Object.keys(ICON_PATHS);
+function iconSVG(key, size, color){
+  const p = ICON_PATHS[key] || ICON_PATHS.spark;
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+}
+
+/* ================= 字体颜色预设 ================= */
+const TEXT_COLORS = [
+  {name:'墨黑',  hex:'#221F2E'},
+  {name:'深灰',  hex:'#4A4756'},
+  {name:'浅灰',  hex:'#8D87A6'},
+  {name:'雾白',  hex:'#FFFFFF'},
+  {name:'奶白',  hex:'#FFF4E8'},
+  {name:'樱花粉',hex:'#E87BA8'},
+  {name:'葡萄紫',hex:'#8B6FD4'},
+  {name:'天空蓝',hex:'#3F92D8'},
+  {name:'薄荷绿',hex:'#2FAF95'},
+  {name:'落日橙',hex:'#E8874A'},
+  {name:'莓果红',hex:'#D14B6D'},
+  {name:'金棕',  hex:'#B8934A'},
+];
+
+/* ================= 默认数据 ================= */
+const DEFAULT_FIELDS = [
+  {icon:'bolt',  label:'雷点',        tags:['对家','撕逼','KY','剧透','无故私信']},
+  {icon:'book',  label:'我看过的书',   tags:['《人间失格》','《挪威的森林》','《三体》','《你当像鸟飞往你的山》']},
+  {icon:'film',  label:'我看过的电影', tags:['《你的名字。》','《千与千寻》','《纵横宇宙》']},
+  {icon:'game',  label:'我玩的游戏',   tags:['原神','崩坏：星穹铁道','明日方舟','塞尔达']},
+  {icon:'globe', label:'圈',          tags:['番剧','V家','音游','手书']},
+  {icon:'spark', label:'mj',          tags:['梦女','梦角','OC']},
+  {icon:'heart', label:'推',          tags:['钟离','神里绫华','玛修']},
+];
+
+/* ================= DOM 引用 ================= */
+const card      = document.getElementById('card');
+const fieldsEl  = document.getElementById('fields');
+const addSecBtn = document.getElementById('addSec');
+const toggleBtn = document.getElementById('toggleEdit');
+const exportBtn = document.getElementById('exportBtn');
+const fileInput = document.getElementById('fileInput');
+const avatarEl  = document.getElementById('avatar');
+const avatarBox = document.getElementById('avatarBox');
+const toastEl   = document.getElementById('toast');
+const yearText  = document.getElementById('yearText');
+const saveModal = document.getElementById('saveModal');
+const resultImg = document.getElementById('resultImg');
+const modalClose= document.getElementById('modalClose');
+
+const bgImage   = document.getElementById('bgImage');
+const bgPattern = document.getElementById('bgPattern');
+const bgOverlay = document.getElementById('bgOverlay');
+const bgMask    = document.getElementById('bgMask');
+const bgPanel   = document.getElementById('bgPanel');
+const bgClose   = document.getElementById('bgClose');
+const openBgBtn = document.getElementById('openBg');
+const patternGrid = document.getElementById('patternGrid');
+const patternVal  = document.getElementById('patternVal');
+const uploadBgBtn = document.getElementById('uploadBg');
+const clearBgBtn  = document.getElementById('clearBg');
+const bgFileInput = document.getElementById('bgFileInput');
+const imgOpacity  = document.getElementById('imgOpacity');
+const overlayOpacity = document.getElementById('overlayOpacity');
+
+const colorMask  = document.getElementById('colorMask');
+const colorPanel = document.getElementById('colorPanel');
+const colorClose = document.getElementById('colorClose');
+const openColorBtn = document.getElementById('openColor');
+const colorGrid  = document.getElementById('colorGrid');
+const colorVal   = document.getElementById('colorVal');
+const colorPicker= document.getElementById('colorPicker');
+const colorHex   = document.getElementById('colorHex');
+
+yearText.textContent = new Date().getFullYear();
+
+let editing = true;
+let currentTheme = THEMES[0];
+let currentPattern = 'none';
+let currentTextColor = '#221F2E';
+
+/* ================= Toast ================= */
+let toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 2600);
+}
+
+/* ================= 编辑态 ================= */
+function syncEditable(root){
+  (root || document).querySelectorAll('[data-edit]').forEach(el=>{
+    el.setAttribute('contenteditable', editing ? 'true' : 'false');
+    el.spellcheck = false;
+  });
+}
+function setEdit(on){
+  editing = on;
+  document.body.classList.toggle('editing', on);
+  syncEditable(document);
+  toggleBtn.textContent = on ? '✎ 编辑中' : '👁 预览模式';
+  toggleBtn.style.background = on ? '#fff' : '';
+}
+
+/* ================= 标签 ================= */
+function createTag(text){
+  const t = document.createElement('span'); t.className = 'tag';
+  const s = document.createElement('span'); s.className = 'txt'; s.textContent = text;
+  s.setAttribute('data-edit','1');
+  s.setAttribute('contenteditable', editing ? 'true' : 'false');
+  const x = document.createElement('span'); x.className = 'x'; x.textContent = '×'; x.title = '删除';
+  x.onclick = e=>{ e.stopPropagation(); t.remove(); };
+  t.appendChild(s); t.appendChild(x); return t;
+}
+
+/* ================= 栏目 ================= */
+function createSection(cfg){
+  cfg = cfg || {};
+  const sec = document.createElement('div'); sec.className = 'sec';
+  const head = document.createElement('div'); head.className = 'sec-head';
+
+  const ico = document.createElement('span'); ico.className = 'sec-ico'; ico.dataset.icon = cfg.icon || 'spark';
+  ico.innerHTML = iconSVG(ico.dataset.icon, 13, currentTheme.ico);
+  ico.onclick = ()=>{
+    if(!editing) return;
+    const cur = ICON_KEYS.indexOf(ico.dataset.icon);
+    const next = ICON_KEYS[(cur + 1) % ICON_KEYS.length];
+    ico.dataset.icon = next;
+    ico.innerHTML = iconSVG(next, 13, currentTheme.ico);
+  };
+
+  const ttl = document.createElement('span'); ttl.className = 'sec-ttl'; ttl.textContent = cfg.label || '新栏目';
+  ttl.setAttribute('data-edit','1'); ttl.setAttribute('contenteditable', editing ? 'true' : 'false');
+
+  const line = document.createElement('span'); line.className = 'sec-line';
+  const del = document.createElement('button'); del.className = 'sec-del'; del.type = 'button'; del.textContent = '×';
+  del.onclick = ()=> sec.remove();
+  head.appendChild(ico); head.appendChild(ttl); head.appendChild(line); head.appendChild(del);
+
+  const tagsWrap = document.createElement('div'); tagsWrap.className = 'tags';
+  const input = document.createElement('input'); input.className = 'tag-input'; input.type = 'text'; input.placeholder = '+ 添加';
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); const v = input.value.trim(); if(v){ tagsWrap.insertBefore(createTag(v), input); input.value = ''; } }
+    else if(e.key === 'Backspace' && !input.value){ const prev = input.previousElementSibling; if(prev && prev.classList.contains('tag')) prev.remove(); }
+  });
+  tagsWrap.appendChild(input);
+  (cfg.tags || []).forEach(t => tagsWrap.insertBefore(createTag(t), input));
+  sec.appendChild(head); sec.appendChild(tagsWrap); return sec;
+}
+
+DEFAULT_FIELDS.forEach(def => fieldsEl.appendChild(createSection(def)));
+
+/* 添加栏目 */
+addSecBtn.onclick = ()=>{
+  const sec = createSection({icon:'spark', label:'新栏目', tags:[]});
+  fieldsEl.appendChild(sec); syncEditable(sec);
+  const ttl = sec.querySelector('.sec-ttl'); ttl.focus();
+  const r = document.createRange(); r.selectNodeContents(ttl); r.collapse(false);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  sec.scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+/* 头像上传 */
+avatarEl.addEventListener('click', ()=>{ if(!editing){ toast('请先切换到编辑模式'); return; } fileInput.click(); });
+fileInput.addEventListener('change', ()=>{
+  const file = fileInput.files && fileInput.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{ avatarBox.innerHTML = ''; const img = document.createElement('img'); img.src = e.target.result; avatarBox.appendChild(img); };
+  reader.readAsDataURL(file); fileInput.value = '';
+});
+
+/* 模式切换 */
+toggleBtn.onclick = ()=> setEdit(!editing);
+
+/* ================= 花纹 ================= */
+function findPattern(id){ return PATTERNS.find(p => p.id === id) || PATTERNS[0]; }
+function renderPattern(){
+  const p = findPattern(currentPattern);
+  const css = p.make(currentTheme.ico);
+  if(css === 'none'){
+    bgPattern.style.backgroundImage = 'none';
+  }else{
+    bgPattern.style.backgroundImage = css;
+    bgPattern.style.backgroundSize = p.size;
+  }
+  patternVal.textContent = p.name;
+  patternGrid.querySelectorAll('.pattern-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.id === currentPattern);
+  });
+}
+function buildPatternGrid(){
+  patternGrid.innerHTML = '';
+  PATTERNS.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'pattern-item';
+    item.dataset.id = p.id;
+    item.title = p.name;
+    const css = p.make(currentTheme.ico);
+    if(css === 'none'){
+      item.style.backgroundImage = 'none';
+      item.style.background = '#fff';
+    }else{
+      item.style.backgroundImage = css;
+      item.style.backgroundSize = p.size;
+    }
+    const nm = document.createElement('span');
+    nm.className = 'pattern-name';
+    nm.textContent = p.name;
+    item.appendChild(nm);
+    item.onclick = ()=>{ currentPattern = p.id; renderPattern(); };
+    patternGrid.appendChild(item);
+  });
+  renderPattern();
+}
+
+/* ================= 背景图 ================= */
+let currentBgImage = '';
+uploadBgBtn.onclick = ()=> bgFileInput.click();
+bgFileInput.addEventListener('change', ()=>{
+  const file = bgFileInput.files && bgFileInput.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    currentBgImage = e.target.result;
+    bgImage.style.backgroundImage = `url("${currentBgImage}")`;
+    bgImage.classList.add('has');
+    if(+overlayOpacity.value < 15){
+      overlayOpacity.value = 32;
+      bgOverlay.style.opacity = 0.32;
+    }
+    toast('背景图已应用');
+  };
+  reader.readAsDataURL(file); bgFileInput.value = '';
+});
+clearBgBtn.onclick = ()=>{
+  currentBgImage = '';
+  bgImage.classList.remove('has');
+  bgImage.style.backgroundImage = 'none';
+  toast('背景图已清除');
+};
+imgOpacity.addEventListener('input', ()=>{ bgImage.style.opacity = (+imgOpacity.value / 100); });
+overlayOpacity.addEventListener('input', ()=>{ bgOverlay.style.opacity = (+overlayOpacity.value / 100); });
+bgImage.style.opacity = 1;
+bgOverlay.style.opacity = 0.3;
+
+/* ================= 字体颜色 ================= */
+function applyTextColor(hex){
+  hex = normalizeHex(hex);
+  currentTextColor = hex;
+
+  // 设置 CSS 变量
+  document.documentElement.style.setProperty('--text', hex);
+
+  // 计算是否浅色 → 自动切换对比底
+  const light = isLight(hex);
+  document.body.classList.toggle('light-text', light);
+
+  // 更新 UI
+  colorPicker.value = hex;
+  colorHex.textContent = hex;
+  const preset = TEXT_COLORS.find(c => c.hex.toUpperCase() === hex);
+  colorVal.textContent = preset ? preset.name : '自定义';
+  colorGrid.querySelectorAll('.color-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.hex.toUpperCase() === hex);
+  });
+}
+
+function buildColorGrid(){
+  colorGrid.innerHTML = '';
+  TEXT_COLORS.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'color-item';
+    item.dataset.hex = c.hex;
+    item.title = c.name + ' ' + c.hex;
+    item.style.background = c.hex;
+    // 白色/奶白色加细边，避免和背景融为一体
+    if(isLight(c.hex)){
+      item.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,.09), 0 4px 10px -4px rgba(140,110,190,.45)';
+    }
+    item.onclick = ()=> applyTextColor(c.hex);
+    colorGrid.appendChild(item);
+  });
+  applyTextColor(currentTextColor);
+}
+
+colorPicker.addEventListener('input', e=> applyTextColor(e.target.value));
+
+/* ================= 面板开关 ================= */
+function showPanel(panel, mask){
+  panel.classList.add('show');
+  mask.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function hidePanel(panel, mask){
+  panel.classList.remove('show');
+  mask.classList.remove('show');
+  document.body.style.overflow = '';
+}
+openBgBtn.onclick = ()=> showPanel(bgPanel, bgMask);
+bgClose.onclick = ()=> hidePanel(bgPanel, bgMask);
+bgMask.onclick = ()=> hidePanel(bgPanel, bgMask);
+
+openColorBtn.onclick = ()=> showPanel(colorPanel, colorMask);
+colorClose.onclick = ()=> hidePanel(colorPanel, colorMask);
+colorMask.onclick = ()=> hidePanel(colorPanel, colorMask);
+
+/* ================= 主题切换 ================= */
+const dotsEl = document.getElementById('dots');
+THEMES.forEach((t,i)=>{
+  const d = document.createElement('div'); d.className = 'dot' + (i===0 ? ' active' : '');
+  d.style.background = `linear-gradient(140deg,${t.pink},${t.lav},${t.sky})`;
+  d.title = '切换配色';
+  d.onclick = ()=>{
+    currentTheme = t;
+    const r = document.documentElement.style;
+    r.setProperty('--pink', t.pink);
+    r.setProperty('--lav',  t.lav);
+    r.setProperty('--sky',  t.sky);
+    r.setProperty('--ico',  t.ico);
+    document.querySelectorAll('.dot').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active');
+    document.querySelectorAll('.sec-ico').forEach(el=>{
+      el.innerHTML = iconSVG(el.dataset.icon, 13, t.ico);
+    });
+    buildPatternGrid();
+  };
+  dotsEl.appendChild(d);
+});
+
+/* ================= 导出 ================= */
+exportBtn.onclick = async ()=>{
+  if(typeof window.html2canvas !== 'function'){
+    toast('组件加载失败，请刷新页面重试');
+    return;
+  }
+  hidePanel(bgPanel, bgMask);
+  hidePanel(colorPanel, colorMask);
+  const wasEditing = editing;
+  if(wasEditing) setEdit(false);
+  card.classList.add('exporting');
+  exportBtn.disabled = true;
+  exportBtn.textContent = '生成中…';
+  await sleep(260);
+
+  try{
+    const dpr = window.devicePixelRatio || 1;
+    const scale = Math.min(3, Math.max(2, dpr * 1.6));
+    const canvas = await window.html2canvas(card, {
+      scale: scale,
+      backgroundColor: '#FBF9FD',
+      logging: false, useCORS: true, allowTaint: false,
+      removeContainer: true, imageTimeout: 0,
+      onclone: function(doc){
+        const st = doc.createElement('style');
+        st.textContent = '*,*::before,*::after{ animation:none !important; transition:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; mask-image:none !important; -webkit-mask-image:none !important; mix-blend-mode:normal !important; filter:none !important; background-attachment:scroll !important; } .card{box-shadow:none !important;}';
+        (doc.head || doc.documentElement).appendChild(st);
+      }
+    });
+    const url = canvas.toDataURL('image/png');
+    resultImg.src = url;
+    saveModal.classList.add('show');
+    toast('图片已生成，长按保存到相册');
+  }catch(err){
+    console.error('[导出失败]', err);
+    toast('浏览器限制，请直接截屏保存');
+  }finally{
+    card.classList.remove('exporting');
+    exportBtn.disabled = false;
+    exportBtn.textContent = '生成图片';
+    if(wasEditing) setEdit(true);
+  }
+};
+
+modalClose.onclick = ()=> saveModal.classList.remove('show');
+saveModal.onclick = (e)=> { if(e.target === saveModal) saveModal.classList.remove('show'); };
+
+/* ================= 启动 ================= */
+buildPatternGrid();
+buildColorGrid();
+applyTextColor('#221F2E');
+setEdit(true);
+</script>
+</body>
+</html>
